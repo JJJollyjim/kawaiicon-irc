@@ -8,18 +8,19 @@ use lazy_static::lazy_static;
 
 mod cal;
 mod parser;
+mod parser_chcon;
 
 lazy_static! {
     static ref CACHE: Mutex<Option<(String, Instant)>> = Mutex::new(None);
 }
 
 fn get_fresh() -> Result<String, HandlerError> {
-    let response = reqwest::get("https://kawaiicon.org/schedule/")
+    let response = reqwest::get("https://2020.chcon.nz/schedule/")
         .or(Err("Couldn't get schedule"))?
         .text()
         .or(Err("Couldn't read schedule"))?;
 
-    let events = parser::parse(&response);
+    let events = parser_chcon::parse(&response);
 
     let cal = cal::make_cal(events.into_iter());
     Ok(std::str::from_utf8(&cal)?.to_string())
@@ -65,18 +66,4 @@ fn handler(_req: Request, _: Context) -> Result<Response<Body>, HandlerError> {
         .header("content-type", "text/calendar")
         .body(Body::Text(cal))
         .unwrap())
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn kawaiicon_monday_3_30pm_cal() {
-        println!(
-            "{}",
-            std::str::from_utf8(&super::cal::make_cal(
-                super::parser::parse(include_str!("../sample.html")).into_iter()
-            ))
-            .unwrap()
-        );
-    }
 }

@@ -1,3 +1,5 @@
+org: jjjollyjim
+app: kawaiicon-ics
 service: kawaiicon-ics
 provider:
   name: aws
